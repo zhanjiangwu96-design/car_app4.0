@@ -15,7 +15,14 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: android-actions/setup-android@v3
+      # GitHub 的 ubuntu-latest 已经自带 Android SDK (ANDROID_HOME), 不再使用 setup-android,
+      # 只接受许可证并补装 Gradle 需要的组件 (失败也不影响, Gradle 会按需自动下载)
+      - name: Accept Android licenses and install SDK parts
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          SDKM="$(ls "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager | head -n 1)"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-34" "build-tools;34.0.0" || true
 
       - uses: gradle/actions/setup-gradle@v4
         with:
